@@ -1,0 +1,36 @@
+{
+  "name": "gulp-app",
+  "private": true,
+  "version": "1.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "fetch-bars": "node scripts/fetch-osm.mjs",
+    "deploy": "vite build && npx -y firebase-tools@latest deploy",
+    "deploy:rules": "npx -y firebase-tools@latest deploy --only firestore",
+    "test:chug": "node scripts/test-chug-engine.mjs"
+  },
+  "dependencies": {
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
+    "@mediapipe/tasks-vision": "^1.2.3",
+    "canvas-confetti": "^1.9.3",
+    "firebase": "^10.7.1",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.284.0",
+    "maplibre-gl": "^4.7.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.6",
+    "vite": "^5.0.8"
+  }
+}

@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom neon variable */
+:root {
+  --color-neon: #CEFF00;
+}
+
+/* PWA / Add to Home Screen optimizations */
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Hauteur réelle de l'écran : 100vh déborde sous la barre de Safari iOS. */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+}
+
+.nav-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Les champs doivent rester sélectionnables (sinon iOS refuse la saisie)
+   et faire au moins 16px (sinon iOS zoome à chaque focus). */
+@layer base {
+  input, textarea, select {
+    -webkit-user-select: text;
+    user-select: text;
+    font-size: 16px;
+  }
+}
+
+button {
+  touch-action: manipulation;
+}
+
+/* Chrono et gros bouton : tailles liées à la hauteur d'écran, pour que tout
+   tienne sans défiler même sur un petit téléphone. */
+.timer-xl {
+  font-size: clamp(3.25rem, 11vh, 6rem);
+  font-size: clamp(3.25rem, 11dvh, 6rem);
+}
+.timer-lg {
+  font-size: clamp(3rem, 9vh, 4.5rem);
+  font-size: clamp(3rem, 9dvh, 4.5rem);
+}
+.chug-size {
+  width: min(var(--chug-size), 25vh);
+  height: min(var(--chug-size), 25vh);
+  width: min(var(--chug-size), 25dvh);
+  height: min(var(--chug-size), 25dvh);
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Scrollbar styling */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 0;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Leaflet Map Styling */
+.leaflet-container {
+  background-color: #0a0a0a !important;
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: #111111;
+  border-radius: 0.75rem;
+  border: 2px solid #CEFF00;
+  box-shadow: 0 0 15px rgba(206, 255, 0, 0.2);
+}
+
+.leaflet-popup-content {
+  color: #ffffff;
+  margin: 10px 12px;
+}
+
+.leaflet-popup-tip {
+  background-color: #111111;
+  border-top-color: #CEFF00;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  color: #CEFF00 !important;
+  border: 1px solid #CEFF00 !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background-color: rgba(206, 255, 0, 0.2) !important;
+}
+
+.leaflet-control-attribution {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  font-size: 9px !important;
+}
+
+.leaflet-control-attribution a {
+  color: #CEFF00 !important;
+}
+
+/* Custom Marker Styling */
+.marker-partner {
+  filter: drop-shadow(0 0 8px rgba(206, 255, 0, 0.6));
+  background: none !important;
+  border: none !important;
+}
+
+.marker-standard {
+  background: none !important;
+  border: none !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-from-bottom {
+  animation: slideUp 0.3s ease-out;
+}

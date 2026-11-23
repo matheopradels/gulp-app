@@ -1,0 +1,110 @@
+rules_version = '2';
+
+// Règles GULP! — alignées sur ce que l'app lit et écrit réellement.
+// Déployer avec : npx firebase-tools deploy --only firestore
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function validName(n) {
+      return n is string && n.size() > 0 && n.size() <= 20;
+    }
+    // Temps minimum plausible par format (mêmes seuils que src/utils/performance.js)
+    function minMs(format) {
+      return format == 'Galopin' ? 500
+           : format == 'Demi' ? 800
+           : format == 'Pinte' ? 1200
+           : 2000;
+    }
+
+    // ---- Profils : users/{uid} = { name, photoURL, createdAt, updatedAt }.
+    //      Lisibles par les joueurs connectés, modifiables par leur seul propriétaire.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['name', 'photoURL', 'createdAt', 'updatedAt'])
+        && validName(request.resource.data.name);
+      allow update: if isMe(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'updatedAt'])
+        && validName(request.resource.data.name);
+      allow delete: if isMe(uid);
+    }
+
+    // ---- Bars : lecture pour tous. Les joueurs ne peuvent plus en ajouter.
+    match /bars/{barId} {
+      allow read: if true;
+      // Ajout de bars par les joueurs désactivé (base OSM uniquement).
+      allow create, update: if false;
+      allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // ---- Prix de la pinte : lecture seule pour les joueurs (gérés depuis la console).
+    match /prices/{priceId} {
+      allow read: if true;
+      // Saisie des prix par les joueurs désactivée : lecture seule.
+      allow create, update: if false;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // ---- Perfs : le classement est public (lecture pour tous).
+    //      Création uniquement pour soi, avec un temps plausible ; une perf
+    //      « classée » doit venir d'un bar à moins de 100 m. Seul le pseudo
+    //      peut être modifié après coup (changement de pseudo).
+    match /performances/{perfId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && validName(request.resource.data.userName)
+        && request.resource.data.format in ['Galopin', 'Demi', 'Pinte', 'Litre']
+        && request.resource.data.timeMs is int
+        && request.resource.data.timeMs >= minMs(request.resource.data.format)
+        && request.resource.data.timeMs < 120000
+        && request.resource.data.timeInSeconds is number
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.createdAt <= request.time
+        && request.resource.data.ranked is bool
+        && (
+          request.resource.data.ranked == false ||
+          (
+            request.resource.data.barId is string
+            && request.resource.data.distance is number
+            && request.resource.data.distance <= 100
+            && request.resource.data.createdAt == request.time
+          )
+        );
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userName'])
+        && validName(request.resource.data.userName);
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // ---- Clans : lisibles par les joueurs connectés (il faut trouver un clan
+    //      par son code pour le rejoindre). Le chef gère tout ; les autres ne
+    //      peuvent qu'entrer ou sortir eux-mêmes (et mettre à jour leur pseudo).
+    match /groups/{groupId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.creatorId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid]
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 30;
+      allow update: if signedIn() && (
+        resource.data.creatorId == request.auth.uid ||
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'members', 'updatedAt'])
+          && request.resource.data.memberIds.size() <= 30
+          && request.resource.data.memberIds.toSet().difference(resource.data.memberIds.toSet()).hasOnly([request.auth.uid])
+          && resource.data.memberIds.toSet().difference(request.resource.data.memberIds.toSet()).hasOnly([request.auth.uid])
+        )
+      );
+      allow delete: if signedIn() && resource.data.creatorId == request.auth.uid;
+    }
+  }
+}

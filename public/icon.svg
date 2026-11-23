@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#000"/>
+  <circle cx="256" cy="276" r="150" fill="none" stroke="#CEFF00" stroke-width="34"/>
+  <rect x="226" y="72" width="60" height="44" rx="12" fill="#CEFF00"/>
+  <path d="M256 276 L326 206" stroke="#CEFF00" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="256" cy="276" r="24" fill="#CEFF00"/>
+</svg>
